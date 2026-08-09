@@ -88,6 +88,23 @@ void test("saveOpenAiGatewayConfig clamps maxTokens to the configured context wi
   assert.equal(storedModel?.maxTokens, 2_048);
 });
 
+void test("saveOpenAiGatewayConfig retains bundled OpenRouter reasoning and output metadata", async () => {
+  const store = new MemoryCustomProvidersStore();
+
+  const saved = await saveOpenAiGatewayConfig(store, {
+    endpointUrl: "https://openrouter.ai/api/v1",
+    modelId: "openai/gpt-5.6-terra",
+    contextWindow: 16_384,
+  });
+
+  const storedModel = (await store.get(saved.id))?.models?.[0];
+  assert.ok(storedModel);
+  assert.equal(storedModel?.reasoning, true);
+  assert.equal(storedModel?.contextWindow, 1_050_000);
+  assert.equal(storedModel?.maxTokens, 128_000);
+  assert.equal(storedModel?.compat?.thinkingFormat, "openrouter");
+});
+
 void test("saveOpenAiGatewayConfig rejects invalid context window values", async () => {
   const store = new MemoryCustomProvidersStore();
 

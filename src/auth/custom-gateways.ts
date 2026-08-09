@@ -3,11 +3,13 @@
  */
 
 import type { Api, Model } from "@earendil-works/pi-ai";
+import { builtinProviders } from "@earendil-works/pi-ai/providers/all";
 import type { CustomProvider } from "../storage/local/custom-providers-store.js";
 
 const OPENAI_GATEWAY_ID_PREFIX = "pi-openai-gateway:";
 export const OPENAI_GATEWAY_PROVIDER_PREFIX = "Gateway · ";
 const OPENAI_GATEWAY_TYPE = "openai-completions";
+const OPENROUTER_API_BASE_URL = "https://openrouter.ai/api/v1";
 
 export const DEFAULT_OPENAI_GATEWAY_CONTEXT_WINDOW = 16_384;
 const DEFAULT_OPENAI_GATEWAY_MAX_TOKENS = 4_096;
@@ -126,6 +128,39 @@ function toGatewayProviderName(displayName: string): string {
   return `${OPENAI_GATEWAY_PROVIDER_PREFIX}${displayName}`;
 }
 
+function isOpenAiCompletionsModel(model: Model<Api>): model is Model<"openai-completions"> {
+  return model.api === "openai-completions";
+}
+
+/**
+ * The custom-gateway form normally has only enough information to describe a
+ * generic OpenAI-compatible server. OpenRouter is different: its public model
+ * catalogue supplies essential per-model limits and reasoning metadata.
+ *
+ * Reuse that metadata when the user deliberately configures OpenRouter through
+ * the custom-gateway path. In particular, do not replace a reasoning model's
+ * real output budget with the generic 4k fallback; reasoning tokens count
+ * against the completion limit on OpenRouter.
+ */
+function getBundledOpenRouterModel(
+  endpointUrl: string,
+  modelId: string,
+): Model<"openai-completions"> | null {
+  if (endpointUrl !== OPENROUTER_API_BASE_URL) {
+    return null;
+  }
+
+  const provider = builtinProviders().find((candidate) => candidate.id === "openrouter");
+  if (!provider) return null;
+
+  const model = provider.getModels().find((candidate) => candidate.id === modelId);
+  if (!model || !isOpenAiCompletionsModel(model)) {
+    return null;
+  }
+
+  return model;
+}
+
 function getFirstModel(provider: CustomProvider): StoredModel | null {
   if (!Array.isArray(provider.models) || provider.models.length === 0) {
     return null;
@@ -195,6 +230,15 @@ function createGatewayModel(args: {
   providerName: string;
   contextWindow: number;
 }): Model<"openai-completions"> {
+  const bundledOpenRouterModel = getBundledOpenRouterModel(args.endpointUrl, args.modelId);
+  if (bundledOpenRouterModel) {
+    return {
+      ...bundledOpenRouterModel,
+      provider: args.providerName,
+      baseUrl: args.endpointUrl,
+    };
+  }
+
   const maxTokens = Math.min(DEFAULT_OPENAI_GATEWAY_MAX_TOKENS, args.contextWindow);
 
   return {

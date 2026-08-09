@@ -1,21 +1,3 @@
-# Research (local only)
-.research/
-research/
-
-# Proof of concept (archived locally)
-poc/
-
-# Dev loop state (pi ralph)
-.ralph/
-
-# Agent session artifacts
-.claude/
-.resume-sessions/
-
-# Slide deck artifacts (local only)
-.clean-slides/
-slides/
-
 # Dependencies
 node_modules/
 
@@ -36,3 +18,6 @@ manifest.dev.xml
 
 # Session exports
 pi-session-*
+
+# Git Hooks
+.githooks/
