@@ -12,11 +12,17 @@ import {
   type MutableModels,
   type Provider,
   type ProviderStreams,
+  type ThinkingLevelMap,
 } from "@earendil-works/pi-ai";
 import { builtinProviders } from "@earendil-works/pi-ai/providers/all";
 
 import { originalFetch } from "../auth/cors-proxy.js";
 import { normalizeProxyUrl } from "../auth/proxy-validation.js";
+import {
+  OPENROUTER_API_BASE_URL,
+  OPENROUTER_CATALOG_TTL_MS,
+  OPENROUTER_PROVIDER_ID,
+} from "./openrouter.js";
 import type { CustomProvider } from "../storage/local/custom-providers-store.js";
 import {
   ProviderCredentialsStore,
@@ -271,6 +277,110 @@ class BrowserModelCatalogsStore implements ModelsStore {
 
 function isModelsResponse(value: DynamicValue): value is DynamicObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asFinitePositiveInteger(value: DynamicValue): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value > 0
+    ? value
+    : undefined;
+}
+
+function asFiniteNumber(value: DynamicValue): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function asDynamicObject(value: DynamicValue): DynamicObject | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value
+    : undefined;
+}
+
+function parseOpenRouterRate(value: DynamicValue): number {
+  const parsed = typeof value === "string" ? Number(value) : asFiniteNumber(value);
+  return parsed !== undefined && Number.isFinite(parsed) && parsed >= 0
+    ? parsed * 1_000_000
+    : 0;
+}
+
+function parseOpenRouterInputs(value: DynamicValue): Model<Api>["input"] {
+  if (!Array.isArray(value)) return ["text"];
+  const input: Model<Api>["input"] = ["text"];
+  if (value.includes("image")) input.push("image");
+  return input;
+}
+
+function parseOpenRouterThinkingLevels(value: DynamicValue): ThinkingLevelMap | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const supported = new Set(value.filter((entry): entry is string => typeof entry === "string"));
+  const result: ThinkingLevelMap = {};
+  const levels = ["minimal", "low", "medium", "high", "xhigh", "max"] as const;
+  for (const level of levels) {
+    if (supported.has(level)) result[level] = level;
+  }
+  if (supported.has("none")) result.off = "none";
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function parseOpenRouterModels(value: DynamicValue): Model<Api>[] {
+  if (!isModelsResponse(value) || !Array.isArray(value.data)) {
+    throw new Error("OpenRouter model catalog response must contain a data array.");
+  }
+  if (value.data.length > MAX_DISCOVERED_MODELS) {
+    throw new Error(`OpenRouter model catalog returned more than ${MAX_DISCOVERED_MODELS} entries.`);
+  }
+
+  const models: Model<Api>[] = [];
+  const seenIds = new Set<string>();
+
+  for (const entry of value.data) {
+    const record = asDynamicObject(entry);
+    if (!record || typeof record.id !== "string") continue;
+    const id = record.id.trim();
+    if (id.length === 0 || id.length > MAX_DISCOVERED_MODEL_ID_LENGTH || seenIds.has(id)) continue;
+
+    const architecture = asDynamicObject(record.architecture);
+    const topProvider = asDynamicObject(record.top_provider);
+    const pricing = asDynamicObject(record.pricing);
+    const reasoningInfo = asDynamicObject(record.reasoning);
+    const contextWindow = asFinitePositiveInteger(topProvider?.context_length)
+      ?? asFinitePositiveInteger(record.context_length)
+      ?? DEFAULT_DISCOVERED_CONTEXT_WINDOW;
+    const maxTokens = asFinitePositiveInteger(topProvider?.max_completion_tokens)
+      ?? Math.min(DEFAULT_DISCOVERED_MAX_TOKENS, contextWindow);
+    const supportedParameters = Array.isArray(record.supported_parameters)
+      ? record.supported_parameters.filter((parameter): parameter is string => typeof parameter === "string")
+      : [];
+    const reasoning = reasoningInfo !== undefined
+      || supportedParameters.includes("reasoning")
+      || supportedParameters.includes("reasoning_effort");
+    const thinkingLevelMap = parseOpenRouterThinkingLevels(reasoningInfo?.supported_efforts);
+
+    models.push({
+      id,
+      name: typeof record.name === "string" && record.name.trim().length > 0 ? record.name.trim() : id,
+      api: "openai-completions",
+      provider: OPENROUTER_PROVIDER_ID,
+      baseUrl: OPENROUTER_API_BASE_URL,
+      reasoning,
+      ...(thinkingLevelMap !== undefined ? { thinkingLevelMap } : {}),
+      input: parseOpenRouterInputs(architecture?.input_modalities),
+      cost: {
+        input: parseOpenRouterRate(pricing?.prompt),
+        output: parseOpenRouterRate(pricing?.completion),
+        cacheRead: parseOpenRouterRate(pricing?.input_cache_read),
+        cacheWrite: parseOpenRouterRate(pricing?.input_cache_write),
+      },
+      contextWindow,
+      maxTokens,
+      compat: { thinkingFormat: "openrouter", sessionAffinityFormat: "openrouter" },
+    });
+    seenIds.add(id);
+  }
+
+  if (models.length === 0) {
+    throw new Error("OpenRouter model catalog contained no valid model entries.");
+  }
+  return models;
 }
 
 function parseModelIds(value: DynamicValue): string[] {
@@ -529,12 +639,68 @@ export class BrowserModelRuntime {
     });
 
     for (const provider of builtinProviders()) {
+      if (provider.id === OPENROUTER_PROVIDER_ID) {
+        this.models.setProvider(this.createOpenRouterProvider(provider));
+        this.builtinProviderIds.add(provider.id);
+        continue;
+      }
       const browserProvider = provider.auth.apiKey
         ? provider
         : createBrowserAdapterProvider(provider);
       this.models.setProvider(browserProvider);
       this.builtinProviderIds.add(browserProvider.id);
     }
+  }
+
+  async clearOpenRouterCatalog(): Promise<void> {
+    await this.modelCatalogs.delete(OPENROUTER_PROVIDER_ID);
+  }
+
+  private createOpenRouterProvider(fallbackProvider: Provider): Provider {
+    const fallbackModels = fallbackProvider.getModels();
+    let dynamicModels: Model<Api>[] = [];
+
+    return {
+      id: OPENROUTER_PROVIDER_ID,
+      name: "OpenRouter",
+      baseUrl: OPENROUTER_API_BASE_URL,
+      auth: { apiKey: fallbackProvider.auth.apiKey },
+      getModels: () => dynamicModels.length > 0 ? dynamicModels : fallbackModels,
+      refreshModels: async (context) => {
+        const cached = await context.store.read();
+        if (cached) {
+          dynamicModels = cached.models.filter((model) => model.provider === OPENROUTER_PROVIDER_ID);
+        }
+        if (!context.allowNetwork || context.signal?.aborted) return;
+        if (cached?.checkedAt !== undefined && Date.now() - cached.checkedAt < OPENROUTER_CATALOG_TTL_MS) {
+          return;
+        }
+
+        const requestUrl = await resolveDiscoveryRequestUrl(
+          `${OPENROUTER_API_BASE_URL}/models`,
+          this.getProxyUrl,
+        );
+        const response = await fetchWithDiscoveryTimeout(
+          this.fetchFn,
+          requestUrl,
+          {
+            Accept: "application/json",
+            Authorization: `Bearer ${context.credential?.type === "api_key" ? context.credential.key : ""}`,
+          },
+          context.signal,
+        );
+        if (!response.ok) {
+          throw new Error(`OpenRouter model discovery failed with HTTP ${response.status}.`);
+        }
+
+        const models = parseOpenRouterModels(await readLimitedDiscoveryJson(response));
+        if (context.signal?.aborted) return;
+        dynamicModels = models;
+        await context.store.write({ models, checkedAt: Date.now() });
+      },
+      stream: (model, context, streamOptions) => openAiCompletionsStreams.stream(model, context, streamOptions),
+      streamSimple: (model, context, streamOptions) => openAiCompletionsStreams.streamSimple(model, context, streamOptions),
+    };
   }
 
   private createDynamicProvider(registration: BrowserProviderRegistration): Provider {

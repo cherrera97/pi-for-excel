@@ -16,6 +16,7 @@ import {
   ProviderCredentialsStore,
   type ProviderKeysStoreLike,
 } from "../src/storage/local/provider-credentials-store.ts";
+import { addOpenRouterPresetToPayload } from "../src/models/openrouter.ts";
 
 class MemoryProviderKeys implements ProviderKeysStoreLike {
   private readonly keys = new Map<string, string>();
@@ -103,6 +104,75 @@ void test("browser runtime exposes built-in models through IndexedDB-backed cred
 
   const auth = await runtime.models.getAuth("openai");
   assert.equal(auth?.auth.apiKey, "test-key");
+});
+
+void test("OpenRouter refreshes its complete catalog once per day with model metadata", async () => {
+  const providerKeys = new MemoryProviderKeys();
+  await providerKeys.set("openrouter", "openrouter-test-key");
+  let requestCount = 0;
+  let requestedUrl = "";
+  let authorization = "";
+  const runtime = createRuntime({
+    providerKeys,
+    fetchFn: (input, init) => {
+      requestCount += 1;
+      requestedUrl = typeof input === "string" ? input : input.toString();
+      authorization = new Headers(init?.headers).get("authorization") ?? "";
+      return Promise.resolve(new Response(JSON.stringify({
+        data: [{
+          id: "example/reasoning-vision",
+          name: "Example Reasoning Vision",
+          context_length: 200_000,
+          architecture: { input_modalities: ["text", "image"] },
+          pricing: {
+            prompt: "0.000002",
+            completion: "0.000008",
+            input_cache_read: "0.0000002",
+            input_cache_write: "0.0000025",
+          },
+          top_provider: { context_length: 180_000, max_completion_tokens: 16_000 },
+          supported_parameters: ["reasoning", "reasoning_effort"],
+          reasoning: { supported_efforts: ["minimal", "medium", "high", "none"] },
+        }],
+      }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    },
+  });
+
+  await runtime.refresh({ allowNetwork: true });
+  await runtime.refresh({ allowNetwork: true, force: true });
+
+  const model = runtime.models.getModel("openrouter", "example/reasoning-vision");
+  assert.equal(requestCount, 1);
+  assert.equal(requestedUrl, "https://openrouter.ai/api/v1/models");
+  assert.equal(authorization, "Bearer openrouter-test-key");
+  assert.equal(model?.contextWindow, 180_000);
+  assert.equal(model?.maxTokens, 16_000);
+  assert.deepEqual(model?.input, ["text", "image"]);
+  assert.equal(model?.reasoning, true);
+  assert.deepEqual(model?.thinkingLevelMap, {
+    minimal: "minimal",
+    medium: "medium",
+    high: "high",
+    off: "none",
+  });
+  assert.equal(model?.cost.input, 2);
+  assert.equal(model?.cost.output, 8);
+  assert.ok(Math.abs((model?.cost.cacheRead ?? 0) - 0.2) < Number.EPSILON);
+  assert.equal(model?.cost.cacheWrite, 2.5);
+});
+
+void test("OpenRouter preset augments, rather than replaces, request fields", () => {
+  const payload = {
+    model: "example/reasoning",
+    reasoning: { effort: "high" },
+    tools: [{ type: "function", function: { name: "read_range" } }],
+  };
+
+  assert.deepEqual(addOpenRouterPresetToPayload(payload, "finance-copilot"), {
+    ...payload,
+    preset: "finance-copilot",
+  });
+  assert.deepEqual(addOpenRouterPresetToPayload(payload, undefined), payload);
 });
 
 void test("custom gateway discovery merges remote model ids and persists the catalogue", async () => {

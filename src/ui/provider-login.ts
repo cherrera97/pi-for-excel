@@ -214,6 +214,9 @@ export interface ProviderDef {
 }
 
 export const ALL_PROVIDERS: ProviderDef[] = [
+  // API-key-only provider. Keep this first so it appears above every other provider.
+  { id: "openrouter",         label: /* brand */ "OpenRouter",               desc: "provider.desc.openrouter" },
+
   // OAuth providers first (subscription / account-based flows)
   // Only list flows that are supported in-browser (PKCE with proxy-assisted or manual callback handling).
   // desc holds a locale key (resolved via t() at render time in buildProviderRow).

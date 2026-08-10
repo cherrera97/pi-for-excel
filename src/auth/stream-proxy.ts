@@ -21,6 +21,10 @@ import type {
 import { isDebugEnabled } from "../debug/debug.js";
 import { selectToolBundle, type ToolBundleId } from "../context/tool-disclosure.js";
 import { modelRecencyScore } from "../models/model-ordering.js";
+import {
+  addOpenRouterPresetToPayload,
+  OPENROUTER_PROVIDER_ID,
+} from "../models/openrouter.js";
 import { OPENAI_GATEWAY_PROVIDER_PREFIX } from "./custom-gateways.js";
 import {
   createPrefixFingerprint,
@@ -58,6 +62,7 @@ function shouldProxyProvider(
   switch (p) {
     // Known to require proxy in browser webviews (CORS blocked)
     case "openai-codex":
+    case "openrouter":
       return true;
 
     // Anthropic OAuth tokens are blocked by CORS; some orgs also block direct browser access.
@@ -551,6 +556,7 @@ export function createOfficeStreamFn(
   getProxyUrl: GetProxyUrl,
   modelsRuntime: Models,
   isRuntimeProvider?: (providerId: string) => boolean,
+  getOpenRouterPresetSlug?: () => Promise<string | undefined>,
 ): OfficeStreamFn {
   return async (model: Model<Api>, context: Context, options?: StreamOptions) => {
     const continuation = isToolContinuation(context.messages);
@@ -582,6 +588,17 @@ export function createOfficeStreamFn(
       toolSelection.bundleId,
     );
     const effectiveOptions = withPayloadHook(options, callRecord.call, callRecord.captureSnapshot);
+    const optionsWithOpenRouterPreset = normalizedModel.provider === OPENROUTER_PROVIDER_ID
+      ? {
+        ...effectiveOptions,
+        onPayload: async (payload: DynamicValue, payloadModel: Model<Api>) => {
+          const transformed = await effectiveOptions?.onPayload?.(payload, payloadModel);
+          const request = transformed ?? payload;
+          const preset = await getOpenRouterPresetSlug?.();
+          return addOpenRouterPresetToPayload(request, preset);
+        },
+      }
+      : effectiveOptions;
 
     const proxyUrl = await getProxyUrl();
     const needsCodexBridge = requiresCodexWebSocketBridge(normalizedModel);
@@ -592,11 +609,11 @@ export function createOfficeStreamFn(
           "Enable Proxy in Settings and run: npx -y pi-for-excel-proxy@latest",
         );
       }
-      return modelsRuntime.streamSimple(normalizedModel, effectiveContext, effectiveOptions);
+      return modelsRuntime.streamSimple(normalizedModel, effectiveContext, optionsWithOpenRouterPreset);
     }
 
     if (!shouldProxyProvider(normalizedModel.provider, options?.apiKey, isRuntimeProvider)) {
-      return modelsRuntime.streamSimple(normalizedModel, effectiveContext, effectiveOptions);
+      return modelsRuntime.streamSimple(normalizedModel, effectiveContext, optionsWithOpenRouterPreset);
     }
 
     // Guardrails: fail fast for known-bad proxy configs (e.g., HTTP proxy from HTTPS taskpane).
@@ -615,13 +632,13 @@ export function createOfficeStreamFn(
 
     const proxiedOptions: StreamOptions | undefined = proxyTransport
       ? {
-          ...effectiveOptions,
+          ...optionsWithOpenRouterPreset,
           // Native Pi sessions use UUIDv7. ChatGPT's Codex router can assign an
           // unavailable Luna rollout alias to older UUIDv4 session identifiers.
-          sessionId: resolveCodexWebSocketBridgeSessionId(effectiveOptions?.sessionId),
+          sessionId: resolveCodexWebSocketBridgeSessionId(optionsWithOpenRouterPreset?.sessionId),
           transport: "sse",
         }
-      : effectiveOptions;
+      : optionsWithOpenRouterPreset;
     return modelsRuntime.streamSimple(
       applyProxy(normalizedModel, validated, proxyTransport),
       effectiveContext,

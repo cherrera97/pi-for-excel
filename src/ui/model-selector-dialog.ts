@@ -13,6 +13,7 @@
  */
 
 import {
+  getSupportedThinkingLevels,
   modelsAreEqual,
   type Api,
   type Model,
@@ -43,6 +44,21 @@ function formatTokenCount(count: number): string {
   if (count >= 1_000_000) return `${Math.round(count / 1_000_000)}M`;
   if (count >= 1_000) return `${Math.round(count / 1_000)}k`;
   return String(count);
+}
+
+function formatModelMetadata(model: Model<Api>): string {
+  const metadata = [
+    `${formatTokenCount(model.contextWindow)} ctx`,
+    `${formatTokenCount(model.maxTokens)} out`,
+  ];
+  if (model.reasoning) {
+    metadata.push(`reasoning: ${getSupportedThinkingLevels(model).filter((level) => level !== "off").join("/") || "on"}`);
+  }
+  if (model.cost.input > 0 || model.cost.output > 0) {
+    metadata.push(`$${model.cost.input.toPrecision(3)}/$${model.cost.output.toPrecision(3)} per M`);
+  }
+  if (model.input.includes("image")) metadata.push("image input");
+  return metadata.join(" · ");
 }
 
 function collectModelItems(modelsRuntime: Models): ModelSelectorItem[] {
@@ -169,10 +185,10 @@ export function openModelSelectorDialog(options: ModelSelectorDialogOptions): vo
       const topRow = document.createElement("span");
       topRow.className = "pi-model-selector-item-top";
 
-      const idEl = document.createElement("span");
-      idEl.className = "pi-model-selector-item-id";
-      idEl.textContent = item.id;
-      topRow.appendChild(idEl);
+      const nameEl = document.createElement("span");
+      nameEl.className = "pi-model-selector-item-name";
+      nameEl.textContent = item.model.name;
+      topRow.appendChild(nameEl);
 
       if (isCurrent) {
         const check = document.createElement("span");
@@ -187,11 +203,15 @@ export function openModelSelectorDialog(options: ModelSelectorDialogOptions): vo
       providerEl.textContent = item.provider;
       topRow.appendChild(providerEl);
 
+      const idEl = document.createElement("span");
+      idEl.className = "pi-model-selector-item-id";
+      idEl.textContent = item.id;
+
       const metaRow = document.createElement("span");
       metaRow.className = "pi-model-selector-item-meta";
-      metaRow.textContent = `${formatTokenCount(item.model.contextWindow)} ctx · ${formatTokenCount(item.model.maxTokens)} out`;
+      metaRow.textContent = formatModelMetadata(item.model);
 
-      row.append(topRow, metaRow);
+      row.append(topRow, idEl, metaRow);
 
       row.addEventListener("click", () => {
         select(item);

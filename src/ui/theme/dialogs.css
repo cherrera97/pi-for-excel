@@ -9,8 +9,8 @@
 .pi-model-selector-card {
   display: flex;
   flex-direction: column;
-  width: min(340px, 92vw);
-  height: min(500px, 78vh);
+  width: min(460px, 94vw);
+  height: min(620px, 82vh);
   border-radius: var(--radius-xl);
   box-shadow: var(--glass-shadow-lg);
   border: var(--glass-border);
@@ -38,7 +38,8 @@
 .pi-model-selector-item {
   display: block;
   width: 100%;
-  padding: 10px 16px;
+  min-width: 0;
+  padding: 12px 20px;
   border: 0;
   border-bottom: 1px solid var(--alpha-4);
   background: transparent;
@@ -55,17 +56,27 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 2px;
+  min-width: 0;
+  margin-bottom: 4px;
 }
 
-.pi-model-selector-item-id {
-  font-family: var(--font-mono);
+.pi-model-selector-item-name {
+  min-width: 0;
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pi-model-selector-item-id {
+  display: block;
+  margin-bottom: 3px;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted-foreground);
 }
 
 .pi-model-selector-item-check {
@@ -76,6 +87,10 @@
 
 .pi-model-selector-item-provider {
   margin-left: auto;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -91,7 +106,9 @@
   display: block;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+  line-height: 1.45;
   color: var(--muted-foreground);
+  overflow-wrap: anywhere;
 }
 
 .pi-model-selector-empty {

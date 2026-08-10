@@ -119,9 +119,12 @@ import { requestConfirmationDialog } from "../ui/confirm-dialog.js";
 import { TOOL_APPROVAL_OVERLAY_ID } from "../ui/overlay-ids.js";
 import { showActionToast, showToast } from "../ui/toast.js";
 import { PiSidebar } from "../ui/pi-sidebar.js";
-import { createProxyBanner } from "../ui/proxy-banner.js";
 import { setActiveProviders } from "../models/active-providers.js";
 import { BrowserModelRuntime } from "../models/browser-model-runtime.js";
+import {
+  isOpenRouterRoutingError,
+  normalizeOpenRouterPresetSlug,
+} from "../models/openrouter.js";
 import { promptForProviderConnection } from "../ui/api-key-dialog.js";
 import { openModelSelectorDialog } from "../ui/model-selector-dialog.js";
 import { getCurrentSpreadsheetHost, type SpreadsheetHostKind } from "../host/index.js";
@@ -162,7 +165,7 @@ import {
   STATUS_CONTEXT_WARNING_ATTR,
   STATUS_CONTEXT_WARNING_SEVERITY_ATTR,
 } from "./status-context.js";
-import { getProxyState, startProxyPolling } from "./proxy-status.js";
+import { startProxyPolling } from "./proxy-status.js";
 import {
   closeStatusPopover,
   toggleContextPopover,
@@ -396,6 +399,7 @@ export async function initTaskpane(opts: {
     getConfiguredProxyUrl,
     modelRuntime.models,
     (providerId) => modelRuntime.shouldProxyProvider(providerId),
+    async () => normalizeOpenRouterPresetSlug(await settings.get<string>("openrouter.preset.slug")),
   );
 
   const workbookCoordinator = createWorkbookCoordinator();
@@ -1173,6 +1177,13 @@ export async function initTaskpane(opts: {
             showErrorBanner(
               errorRoot,
               `Network error (likely CORS). If you're using OAuth, enable /settings → Proxy with ${DEFAULT_PROXY_URL} and retry. Guide: ${PROXY_HELPER_DOCS_URL}`,
+            );
+          } else if (isOpenRouterRoutingError(err)) {
+            await modelRuntime.clearOpenRouterCatalog();
+            void refreshRuntimeModels();
+            showErrorBanner(
+              errorRoot,
+              "OpenRouter could no longer route this model. Its cached catalog was cleared and refreshed; choose an available model and retry.",
             );
           } else {
             showErrorBanner(errorRoot, t("init.llmError", { error: err }));
@@ -1964,27 +1975,6 @@ export async function initTaskpane(opts: {
       if (messagesContainer) {
         messagesContainer.parentElement?.insertBefore(disclosureEl, messagesContainer);
       }
-    }
-  }
-
-  // ── Proxy warning banner (state-driven) ──
-  {
-    const messagesContainer = sidebar.querySelector(".pi-messages");
-    const host = messagesContainer?.parentElement;
-    if (host && messagesContainer) {
-      const proxyBanner = createProxyBanner();
-      host.insertBefore(proxyBanner.root, messagesContainer);
-      proxyBanner.update(getProxyState());
-
-      document.addEventListener("pi:proxy-state-changed", (event: Event) => {
-        if (!(event instanceof CustomEvent)) return;
-        const detail: DynamicValue = event.detail;
-        if (!isTaskpaneInitPayloadShape(detail)) return;
-        const state = detail.state;
-        if (state === "detected" || state === "not-detected" || state === "unknown") {
-          proxyBanner.update(state);
-        }
-      });
     }
   }
 

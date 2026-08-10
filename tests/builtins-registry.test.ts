@@ -206,12 +206,11 @@ void test("taskpane init wires gear settings to unified settings overlay", async
   assert.match(initSource, /configureSettingsPages\(\{[\s\S]*setModelSwitchBehavior/);
 });
 
-void test("taskpane init mounts proxy banner and reacts to proxy state changes", async () => {
+void test("taskpane init does not mount a proxy warning banner", async () => {
   const initSource = await readFile(new URL("../src/taskpane/init.ts", import.meta.url), "utf8");
 
-  assert.match(initSource, /createProxyBanner/);
-  assert.match(initSource, /document\.addEventListener\("pi:proxy-state-changed"/);
-  assert.match(initSource, /proxyBanner\.update\(getProxyState\(\)\)/);
+  assert.doesNotMatch(initSource, /createProxyBanner/);
+  assert.doesNotMatch(initSource, /pi:proxy-state-changed/);
 });
 
 void test("status bar keeps model, thinking, context, and mode without rules\/proxy badges", async () => {

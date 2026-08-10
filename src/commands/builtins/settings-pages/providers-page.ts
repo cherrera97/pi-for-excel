@@ -5,6 +5,7 @@
 import { getAppStorage } from "../../../storage/local/app-storage.js";
 
 import { t } from "../../../language/index.js";
+import { normalizeOpenRouterPresetSlug, OPENROUTER_PRESET_SETTING } from "../../../models/openrouter.js";
 import { VISIBLE_PROVIDERS, buildProviderRow } from "../../../ui/provider-login.js";
 import type { SettingsShellPage } from "../../../ui/settings-shell.js";
 import { showToast } from "../../../ui/toast.js";
@@ -20,6 +21,42 @@ export function createProvidersPage(): SettingsShellPage {
       providerList.className = "pi-welcome-providers pi-provider-picker-list pi-settings-provider-list";
 
       const storage = getAppStorage();
+
+      const openRouterSettings = document.createElement("section");
+      openRouterSettings.className = "pi-settings-openrouter";
+
+      const presetLabel = document.createElement("label");
+      presetLabel.className = "pi-settings-openrouter__label";
+      presetLabel.textContent = t("provider.openrouter.preset.label");
+
+      const presetHint = document.createElement("p");
+      presetHint.className = "pi-settings-openrouter__hint";
+      presetHint.textContent = t("provider.openrouter.preset.hint");
+
+      const presetInput = document.createElement("input");
+      presetInput.className = "pi-overlay-input pi-settings-openrouter__input";
+      presetInput.type = "text";
+      presetInput.placeholder = t("provider.openrouter.preset.placeholder");
+      presetInput.autocomplete = "off";
+      presetInput.spellcheck = false;
+      presetInput.setAttribute("aria-label", t("provider.openrouter.preset.label"));
+
+      try {
+        presetInput.value = normalizeOpenRouterPresetSlug(
+          await storage.settings.get<string>(OPENROUTER_PRESET_SETTING),
+        ) ?? "";
+      } catch {
+        // Leave the optional setting empty when persistence is unavailable.
+      }
+
+      presetInput.addEventListener("change", () => {
+        void storage.settings.set(
+          OPENROUTER_PRESET_SETTING,
+          normalizeOpenRouterPresetSlug(presetInput.value) ?? "",
+        );
+      });
+      openRouterSettings.append(presetLabel, presetInput, presetHint);
+      ctx.body.appendChild(openRouterSettings);
 
       let configuredSet = new Set<string>();
       try {

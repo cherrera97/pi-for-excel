@@ -181,6 +181,7 @@ const DEFAULT_ALLOWED_TARGET_HOSTS = new Set([
   "auth.openai.com",
   "api.openai.com",
   "chatgpt.com",
+  "openrouter.ai",
   "oauth2.googleapis.com",
   "generativelanguage.googleapis.com",
   "cloudcode-pa.googleapis.com",
