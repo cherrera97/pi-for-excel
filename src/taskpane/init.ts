@@ -1142,7 +1142,7 @@ export async function initTaskpane(opts: {
       void refreshRuntimeCapabilities();
     });
 
-    const unsubscribeErrorTracking = agent.subscribe((ev) => {
+    const unsubscribeErrorTracking = agent.subscribe(async (ev) => {
       const isActiveRuntime = runtimeManager.getActiveRuntime()?.runtimeId === runtimeId;
 
       if (ev.type === "message_start" && ev.message.role === "user" && isActiveRuntime) {
