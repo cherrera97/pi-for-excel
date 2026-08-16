@@ -105,6 +105,85 @@
     --glass-shadow: 0 2px 8px var(--alpha-6), 0 0.5px 0 var(--alpha-4);
     --glass-shadow-lg: 0 12px 40px var(--alpha-10), 0 2px 6px var(--alpha-6);
     --glass-border: 1px solid var(--white-alpha-50);
+
+    --scrollbar-thumb: #d6d6d6;
+    --scrollbar-thumb-hover: #adadad;
+    --code-bg: #f7f6f2;
+    --input-placeholder: #9e9e9e;
+    --input-drop-hint-bg: rgba(239, 250, 245, 0.88);
+    --destructive-strong: #b83227;
+    --error-tint-bg: rgba(207, 59, 46, 0.08);
+    --error-tint-border: rgba(207, 59, 46, 0.20);
+    --focus-ring-green: rgba(24, 127, 94, 0.22);
+    --drag-border-green: rgba(26, 138, 103, 0.55);
+    --drag-ring-green: rgba(26, 138, 103, 0.20);
+    --tool-group-divider: rgba(24, 127, 94, 0.07);
+    --cell-ref-underline: rgba(24, 127, 94, 0.35);
+    --cell-ref-underline-hover: rgba(24, 127, 94, 0.60);
+    --accent-blue-bg: rgba(59, 108, 214, 0.10);
+    --accent-blue-fg: #34579f;
+    --accent-purple-bg: rgba(140, 78, 200, 0.10);
+    --accent-purple-fg: #7351a8;
+    --accent-amber-bg: rgba(199, 150, 27, 0.12);
+    --accent-amber-fg: #8f6b1b;
+    --status-lock-waiting-bg: rgba(0, 0, 0, 0.12);
+    --status-auto-fg: #23824b;
+    --status-auto-bg: rgba(39, 171, 92, 0.12);
+    --status-auto-border: rgba(39, 171, 92, 0.38);
+    --status-auto-hover-bg: rgba(39, 171, 92, 0.20);
+    --status-auto-hover-border: rgba(39, 171, 92, 0.48);
+    --status-confirm-fg: #8f551f;
+    --status-confirm-bg: rgba(194, 118, 31, 0.12);
+    --status-confirm-border: rgba(194, 118, 31, 0.38);
+    --status-confirm-hover-bg: rgba(194, 118, 31, 0.20);
+    --status-confirm-hover-border: rgba(194, 118, 31, 0.48);
+    --callout-info-fg: #2e4f8f;
+    --callout-info-bg: rgba(59, 108, 214, 0.06);
+    --callout-info-border: rgba(59, 108, 214, 0.15);
+    --callout-warn-fg: #8f6b1b;
+    --callout-warn-bg: rgba(199, 150, 27, 0.08);
+    --callout-warn-border: rgba(199, 150, 27, 0.20);
+    --callout-success-fg: #1d6b4f;
+    --badge-ok-fg: #187452;
+    --badge-ok-bg: rgba(24, 143, 96, 0.12);
+    --badge-ok-border: rgba(24, 143, 96, 0.40);
+    --badge-warn-fg: #8f5c2a;
+    --badge-warn-bg: rgba(190, 119, 40, 0.12);
+    --badge-warn-border: rgba(190, 119, 40, 0.35);
+    --badge-info-fg: #34579f;
+    --badge-info-bg: rgba(59, 108, 214, 0.10);
+    --badge-info-border: rgba(59, 108, 214, 0.30);
+    --overlay-text-warning: #9b662d;
+    --experimental-warning: #b3542a;
+    --queue-bg: rgba(248, 247, 243, 0.92);
+    --queue-label-steer: #3a5bbf;
+    --queue-label-followup: #1e8a68;
+    --queue-label-action: #3a6fb5;
+    --tab-fade-from: rgba(251, 250, 246, 0.5);
+    --tab-fade-to: rgba(251, 250, 246, 0.2);
+    --resume-active-bg: rgba(24, 143, 110, 0.16);
+    --resume-active-border: rgba(24, 143, 110, 0.45);
+    --danger-fg: #c43c2c;
+    --syntax-keyword: #6b3fa0;
+    --syntax-string: #187f5e;
+    --syntax-number: #b3651d;
+    --syntax-title: #3a5bbf;
+    --syntax-attr: #3a6fb5;
+    --syntax-symbol: #8a3f9e;
+    --shimmer-mid: #8c8c8c;
+    --shimmer-edge: #262626;
+    --toast-bg: rgba(46, 46, 46, 0.88);
+    --toast-fg: #fafafa;
+    --toast-error-bg: rgba(137, 44, 31, 0.95);
+    --toast-error-border: rgba(239, 103, 86, 0.38);
+    --toast-error-shadow: 0 6px 16px rgba(120, 48, 34, 0.38);
+    --toast-action-border: rgba(255, 255, 255, 0.35);
+    --toast-action-bg: rgba(255, 255, 255, 0.12);
+    --toast-error-action-border: rgba(255, 255, 255, 0.55);
+    --toast-error-action-bg: rgba(255, 255, 255, 0.16);
+    --tab-lock-fg: rgba(255, 255, 255, 0.70);
+    --tab-busy-ring: rgba(255, 255, 255, 0.25);
+    --toast-action-hover-bg: rgba(255, 255, 255, 0.20);
   }
 
   .dark {
@@ -144,6 +223,19 @@
     --alpha-20: rgba(255, 255, 255, 0.20);
     --alpha-25: rgba(255, 255, 255, 0.25);
 
+    --white-alpha-20: rgba(67, 71, 81, 0.20);
+    --white-alpha-25: rgba(67, 71, 81, 0.25);
+    --white-alpha-35: rgba(67, 71, 81, 0.35);
+    --white-alpha-40: rgba(67, 71, 81, 0.40);
+    --white-alpha-45: rgba(67, 71, 81, 0.45);
+    --white-alpha-50: rgba(67, 71, 81, 0.50);
+    --white-alpha-55: rgba(67, 71, 81, 0.55);
+    --white-alpha-60: rgba(67, 71, 81, 0.60);
+    --white-alpha-65: rgba(67, 71, 81, 0.65);
+    --white-alpha-70: rgba(67, 71, 81, 0.70);
+    --white-alpha-80: rgba(67, 71, 81, 0.80);
+    --white-alpha-90: rgba(67, 71, 81, 0.90);
+
     --pi-green-strong: #53b58e;
     --pi-green-light: rgba(100, 199, 159, 0.18);
     --pi-green-lighter: rgba(100, 199, 159, 0.10);
@@ -165,25 +257,115 @@
     --glass-shadow: 0 3px 10px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(0, 0, 0, 0.2);
     --glass-shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.45), 0 4px 10px rgba(0, 0, 0, 0.3);
     --glass-border: 1px solid rgba(255, 255, 255, 0.14);
+
+    --green-alpha-6: rgba(100, 199, 159, 0.06);
+    --green-alpha-12: rgba(100, 199, 159, 0.14);
+    --green-alpha-14: rgba(100, 199, 159, 0.16);
+    --green-alpha-20: rgba(100, 199, 159, 0.22);
+    --green-alpha-25: rgba(100, 199, 159, 0.28);
+    --green-alpha-30: rgba(100, 199, 159, 0.34);
+
+    --pill-green-border: 1px solid rgba(100, 199, 159, 0.16);
+    --pill-green-bg: rgba(100, 199, 159, 0.08);
+    --pill-green-hover-border: rgba(100, 199, 159, 0.28);
+    --pill-red-border: 1px solid rgba(239, 103, 86, 0.20);
+    --pill-red-bg: rgba(239, 103, 86, 0.10);
+    --pill-red-hover-border: rgba(239, 103, 86, 0.32);
+
+    --scrollbar-thumb: #565a64;
+    --scrollbar-thumb-hover: #6c707a;
+    --code-bg: #2e3138;
+    --input-placeholder: #92969f;
+    --input-drop-hint-bg: rgba(52, 60, 55, 0.92);
+    --destructive-strong: #f07968;
+    --error-tint-bg: rgba(239, 103, 86, 0.14);
+    --error-tint-border: rgba(239, 103, 86, 0.30);
+    --focus-ring-green: rgba(100, 199, 159, 0.40);
+    --drag-border-green: rgba(128, 207, 171, 0.70);
+    --drag-ring-green: rgba(128, 207, 171, 0.30);
+    --tool-group-divider: rgba(100, 199, 159, 0.16);
+    --cell-ref-underline: rgba(100, 199, 159, 0.45);
+    --cell-ref-underline-hover: rgba(100, 199, 159, 0.70);
+    --accent-blue-bg: rgba(122, 153, 232, 0.16);
+    --accent-blue-fg: #b9c9f2;
+    --accent-purple-bg: rgba(172, 130, 232, 0.16);
+    --accent-purple-fg: #d2c2f0;
+    --accent-amber-bg: rgba(226, 189, 74, 0.16);
+    --accent-amber-fg: #ead489;
+    --status-lock-waiting-bg: rgba(255, 255, 255, 0.14);
+    --status-auto-fg: #8fd9b2;
+    --status-auto-bg: rgba(98, 201, 152, 0.14);
+    --status-auto-border: rgba(98, 201, 152, 0.40);
+    --status-auto-hover-bg: rgba(98, 201, 152, 0.22);
+    --status-auto-hover-border: rgba(98, 201, 152, 0.50);
+    --status-confirm-fg: #e2b485;
+    --status-confirm-bg: rgba(222, 159, 74, 0.14);
+    --status-confirm-border: rgba(222, 159, 74, 0.40);
+    --status-confirm-hover-bg: rgba(222, 159, 74, 0.22);
+    --status-confirm-hover-border: rgba(222, 159, 74, 0.50);
+    --callout-info-fg: #b9c9f2;
+    --callout-info-bg: rgba(122, 153, 232, 0.10);
+    --callout-info-border: rgba(122, 153, 232, 0.22);
+    --callout-warn-fg: #ead489;
+    --callout-warn-bg: rgba(226, 189, 74, 0.12);
+    --callout-warn-border: rgba(226, 189, 74, 0.26);
+    --callout-success-fg: #a9e4c9;
+    --badge-ok-fg: #a9e4c9;
+    --badge-ok-bg: rgba(100, 199, 159, 0.16);
+    --badge-ok-border: rgba(100, 199, 159, 0.45);
+    --badge-warn-fg: #eec39a;
+    --badge-warn-bg: rgba(222, 159, 74, 0.16);
+    --badge-warn-border: rgba(222, 159, 74, 0.40);
+    --badge-info-fg: #b9c9f2;
+    --badge-info-bg: rgba(122, 153, 232, 0.16);
+    --badge-info-border: rgba(122, 153, 232, 0.35);
+    --overlay-text-warning: #eec39a;
+    --experimental-warning: #eaa58a;
+    --queue-bg: rgba(44, 47, 55, 0.92);
+    --queue-label-steer: #a9c0f0;
+    --queue-label-followup: #a9e0c9;
+    --queue-label-action: #a9c6ea;
+    --tab-fade-from: rgba(48, 51, 59, 0.5);
+    --tab-fade-to: rgba(48, 51, 59, 0.2);
+    --resume-active-bg: rgba(100, 199, 159, 0.20);
+    --resume-active-border: rgba(100, 199, 159, 0.50);
+    --danger-fg: #f29183;
+    --syntax-keyword: #c2a6e0;
+    --syntax-string: #a9e0c9;
+    --syntax-number: #e0b486;
+    --syntax-title: #a9c0f0;
+    --syntax-attr: #a9c6ea;
+    --syntax-symbol: #d0a6e0;
+    --shimmer-mid: #d8dae0;
+    --shimmer-edge: #7f828c;
+    --toast-bg: rgba(35, 38, 46, 0.92);
+    --toast-fg: #f4f5f8;
+    --toast-error-bg: rgba(110, 47, 40, 0.95);
+    --toast-error-border: rgba(239, 103, 86, 0.42);
+    --toast-error-shadow: 0 6px 16px rgba(0, 0, 0, 0.40);
+    --toast-action-border: rgba(255, 255, 255, 0.25);
+    --toast-action-bg: rgba(255, 255, 255, 0.12);
+    --toast-error-action-border: rgba(255, 255, 255, 0.50);
+    --toast-error-action-bg: rgba(255, 255, 255, 0.16);
   }
 
   * {
-    scrollbar-color: #d6d6d6 transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #d6d6d6;
+    background: var(--scrollbar-thumb);
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: #adadad;
+    background: var(--scrollbar-thumb-hover);
   }
 
   .pi-session-tabs::after {
     background: linear-gradient(
       to bottom,
-      rgba(251, 250, 246, 0.5),
-      rgba(251, 250, 246, 0.2) 40%,
+      var(--tab-fade-from),
+      var(--tab-fade-to) 40%,
       transparent
     );
   }

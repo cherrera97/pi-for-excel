@@ -11,8 +11,8 @@
   padding: 6px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
-  background: oklch(0.18 0 0 / 0.88);
-  color: white;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   backdrop-filter: var(--glass-blur-dropdown);
@@ -30,9 +30,9 @@
 }
 
 .pi-toast--error {
-  background: oklch(0.34 0.17 25 / 0.95);
-  border-color: oklch(0.68 0.14 25 / 0.38);
-  box-shadow: 0 6px 16px oklch(0.20 0.10 25 / 0.38);
+  background: var(--toast-error-bg);
+  border-color: var(--toast-error-border);
+  box-shadow: var(--toast-error-shadow);
 }
 
 .pi-toast--action {
@@ -55,12 +55,12 @@
 }
 
 .pi-toast__action {
-  border: 1px solid oklch(1 0 0 / 0.35);
+  border: 1px solid var(--toast-action-border);
   /* Intentional pill shape for floating action toast. */
   border-radius: var(--radius-full);
   padding: 2px 9px;
-  background: oklch(1 0 0 / 0.12);
-  color: white;
+  background: var(--toast-action-bg);
+  color: var(--toast-fg);
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -72,12 +72,12 @@
 }
 
 .pi-toast__action:hover {
-  background: var(--white-alpha-20);
+  background: var(--toast-action-hover-bg);
 }
 
 .pi-toast--error .pi-toast__action {
-  border-color: oklch(1 0 0 / 0.55);
-  background: oklch(1 0 0 / 0.16);
+  border-color: var(--toast-error-action-border);
+  background: var(--toast-error-action-bg);
 }
 
 

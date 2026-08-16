@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  background: oklch(0.97 0.005 100 / 0.92);
+  background: var(--queue-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-top: var(--pi-divider);
@@ -30,9 +30,9 @@
   letter-spacing: 0.03em;
   flex-shrink: 0;
 }
-.pi-queue__label--steer { color: oklch(0.55 0.15 250); }
-.pi-queue__label--followup { color: oklch(0.55 0.12 170); }
-.pi-queue__label--action { color: oklch(0.55 0.13 210); }
+.pi-queue__label--steer { color: var(--queue-label-steer); }
+.pi-queue__label--followup { color: var(--queue-label-followup); }
+.pi-queue__label--action { color: var(--queue-label-action); }
 
 .pi-queue__text {
   color: var(--muted-foreground);

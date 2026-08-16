@@ -62,7 +62,7 @@
 
 /* Divider between rows */
 .pi-tool-group > tool-message + tool-message {
-  border-top: 1px solid oklch(0.45 0.12 160 / 0.07);
+  border-top: 1px solid var(--tool-group-divider);
 }
 
 /* Fallback wrapper for tool messages that don't use custom renderers. */
@@ -208,7 +208,7 @@ markdown-block tr:last-child td {
   border-bottom: none;
 }
 markdown-block pre {
-  background: oklch(0.97 0.002 90) !important;
+  background: var(--code-bg) !important;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px;
@@ -278,12 +278,12 @@ markdown-block pre {
    Owned here so syntax coloring survives dropping pi-web-ui's app.css. */
 .hljs { background: transparent; }
 .hljs-comment, .hljs-quote { color: var(--muted-foreground); font-style: italic; }
-.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-type { color: oklch(0.45 0.16 280); }
-.hljs-string, .hljs-regexp, .hljs-addition { color: oklch(0.45 0.12 160); }
-.hljs-number, .hljs-literal { color: oklch(0.5 0.14 40); }
-.hljs-title, .hljs-name, .hljs-section { color: oklch(0.45 0.13 250); }
-.hljs-attr, .hljs-attribute, .hljs-variable, .hljs-template-variable { color: oklch(0.45 0.1 220); }
-.hljs-symbol, .hljs-bullet, .hljs-meta { color: oklch(0.5 0.1 320); }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-type { color: var(--syntax-keyword); }
+.hljs-string, .hljs-regexp, .hljs-addition { color: var(--syntax-string); }
+.hljs-number, .hljs-literal { color: var(--syntax-number); }
+.hljs-title, .hljs-name, .hljs-section { color: var(--syntax-title); }
+.hljs-attr, .hljs-attribute, .hljs-variable, .hljs-template-variable { color: var(--syntax-attr); }
+.hljs-symbol, .hljs-bullet, .hljs-meta { color: var(--syntax-symbol); }
 .hljs-deletion { color: var(--destructive); }
 .hljs-emphasis { font-style: italic; }
 .hljs-strong { font-weight: 700; }
@@ -367,9 +367,9 @@ thinking-block markdown-block h6 {
 .pi-thinking-label--streaming {
   background: linear-gradient(
     90deg,
-    oklch(0.55 0 0),
-    oklch(0.15 0 0),
-    oklch(0.55 0 0)
+    var(--shimmer-mid),
+    var(--shimmer-edge),
+    var(--shimmer-mid)
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
